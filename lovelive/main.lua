@@ -1,5 +1,11 @@
 -- -*- Mode: lua; tab-width: 2; lua-indent-level: 2; indent-tabs-mode: nil; -*-
 
+--
+-- if you want use lovelive then
+--   use app.lua instead of main.lua
+-- end
+--
+
 function load_module(mod, reload)
   local m = require(mod)
   if reload then
