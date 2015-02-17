@@ -55,7 +55,7 @@ local function loadliveconf()
   }
   if app.liveconf then
     app.liveconf(c)
-	end
+  end
   if not c.live then
     c.autoreload.enable = false
     c.use_pcall = false
