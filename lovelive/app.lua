@@ -29,6 +29,7 @@ function app.update(dt)
 end
 
 function app.draw()
+  love.timer.sleep(0.02)
 end
 
 
