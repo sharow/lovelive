@@ -16,7 +16,7 @@ end
 
 -- callbacks
 
-function app.load()
+function app.load(arg)
   -- initial load (== love.load())
   app.reload()
 end
@@ -31,7 +31,6 @@ end
 function app.draw()
   love.timer.sleep(0.02)
 end
-
 
 
 

@@ -6,7 +6,7 @@
 -- end
 --
 
-function load_module(mod, reload)
+local load_module = function(mod, reload)
   local m = require(mod)
   if reload then
     if m.reload then
@@ -14,13 +14,13 @@ function load_module(mod, reload)
     end
   else
     if m.load then
-      m.load()
+      m.load(arg)
     end
   end
   return m
 end
 
-function reload_module(mod, gc)
+local reload_module = function(mod, gc)
   -- this return (module, errormsg) pair
   local package = require("package")
   if package.loaded[mod] == nil then
@@ -44,9 +44,7 @@ function reload_module(mod, gc)
 end
 
 
-local app = load_module("app")
-
-local function loadliveconf()
+local loadliveconf = function()
   local c = {
     -- default config
     live = true,
@@ -72,14 +70,14 @@ end
 
 local errormsg = nil
 
-local function draw_msg(msg)
+local draw_msg = function(msg)
   love.graphics.clear()
   love.graphics.setColor(255, 255, 255, 255)
   love.graphics.printf(msg, 0, 0, love.graphics.getWidth())
   -- love.graphics.present()
 end
 
-local function set_error(msg)
+local set_error = function(msg)
   if msg then
     errormsg = debug.traceback("Error: " .. tostring(msg)):gsub("\n[^\n]+$", "")
     if conf.error_file then
@@ -92,13 +90,13 @@ local function set_error(msg)
   end
 end
 
-local function reload()
+local reload = function()
   app, msg = reload_module("app", conf.gc_before_reload)
   set_error(msg)
 end
 
 
-local function call(name, ...)
+local call = function(name, ...)
   if not app[name] then
     return
   end
@@ -115,12 +113,14 @@ end
 
 -- love callbacks
 
-function love.load()
+love.load = function(arg)
+  arg = arg
+  app = load_module("app")
   conf = loadliveconf()
   t0 = love.timer.getTime()
 end
 
-function love.update(dt)
+love.update = function(dt)
   if conf.autoreload.enable then
     local t1 = love.timer.getTime()
     local elapsed = t1 - t0
@@ -132,14 +132,14 @@ function love.update(dt)
   call("update", dt)
 end
 
-function love.keypressed(key, isrepeat)
+love.keypressed = function(key, scancode, isrepeat)
   if conf.reloadkey and conf.reloadkey == key then
     reload()
   end
   call("keypressed", key, isrepeat)
 end
 
-function love.draw(...)
+love.draw = function(...)
   if errormsg then
     draw_msg(errormsg)
     love.timer.sleep(0.1)
@@ -148,25 +148,49 @@ function love.draw(...)
   end
 end
 
-function love.keyreleased(...) call("keyreleased", ...) end
-function love.mousefocus(...) call("mousefocus", ...) end
-function love.mousemoved(...) call("mousemoved", ...) end
-function love.mousepressed(...) call("mousepressed", ...) end
-function love.mousereleased(...) call("mousereleased", ...) end
-function love.quit(...) call("quit", ...) end
-function love.resize(...) call("resize", ...) end
-function love.textinput(...) call("textinput", ...) end
-function love.threaderror(...) call("threaderror", ...) end
-function love.visible(...) call("visible", ...) end
+local loveproxies = [[
+  keyreleased
+  mousefocus
+  mousemoved
+  directorydropped
+  draw
+  errorhandler
+  filedropped
+  focus
+  keypressed
+  keyreleased
+  lowmemory
+  mousefocus
+  mousemoved
+  mousepressed
+  mousereleased
+  quit
+  resize
+  textedited
+  textinput
+  threaderror
+  touchmoved
+  touchpressed
+  touchreleased
+  visible
 
-function love.gamepadaxis(...) call("gamepadaxis", ...) end
-function love.gamepadpressed(...) call("gamepadpressed", ...) end
-function love.gamepadreleased(...) call("gamepadreleased", ...) end
-function love.joystickadded(...) call("joystickadded", ...) end
-function love.joystickaxis(...) call("joystickaxis", ...) end
-function love.joystickhat(...) call("joystickhat", ...) end
-function love.joystickpressed(...) call("joystickpressed", ...) end
-function love.joystickreleased(...) call("joystickreleased", ...) end
-function love.joystickremoved(...) call("joystickremoved", ...) end
+  gamepadaxis
+  gamepadpressed
+  gamepadreleased
+  joystickadded
+  joystickaxis
+  joystickhat
+  joystickpressed
+  joystickreleased
+  joystickremoved
+]]
+
+for proxy in string.gmatch(loveproxies, "%S+") do
+  local s = "love." .. proxy .. " = function(...) call('" .. proxy .. "', ...) end"
+  local func, err = load(s, nil, 't', {call=call, love=love})
+  assert(func, err)
+  local ok, _ = pcall(func)
+  assert(ok)
+end
 
 -- vim: set ts=2 sw=2 tw=72 expandtab:
