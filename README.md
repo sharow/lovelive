@@ -5,5 +5,15 @@ Live coding framework for [LÖVE](https://love2d.org/)
 
 [![lovelive](https://img.youtube.com/vi/ZUnI2amTmzQ/0.jpg)](https://www.youtube.com/watch?v=ZUnI2amTmzQ)
 
+```sh
+$ ls
+live  README.md
+$
+$ love live &
+[1] 1234
+$ $EDITOR live/app.lua
+```
+
+
 # License
 - zlib License
