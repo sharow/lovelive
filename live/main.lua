@@ -43,7 +43,6 @@ local reload_module = function(mod, gc)
   end
 end
 
-
 local loadliveconf = function()
   local c = {
     -- default config
@@ -92,6 +91,9 @@ end
 
 local reload = function()
   app, msg = reload_module("app", conf.gc_before_reload)
+  if msg then
+    print(msg)
+  end
   set_error(msg)
 end
 
@@ -148,13 +150,12 @@ love.draw = function(...)
   end
 end
 
-local loveproxies = [[
+local lovecallbacks = [[
   keyreleased
   mousefocus
   mousemoved
   directorydropped
   draw
-  errorhandler
   filedropped
   focus
   keypressed
@@ -184,13 +185,19 @@ local loveproxies = [[
   joystickreleased
   joystickremoved
 ]]
+-- errorhandler
 
-for proxy in string.gmatch(loveproxies, "%S+") do
-  local s = "love." .. proxy .. " = function(...) call('" .. proxy .. "', ...) end"
+local override = function(name)
+  local s = "love." .. name .. " = function(...) call('" .. name .. "', ...) end"
   local func, err = load(s, nil, 't', {call=call, love=love})
   assert(func, err)
   local ok, _ = pcall(func)
   assert(ok)
 end
+
+for name in string.gmatch(lovecallbacks, "%S+") do
+  override(name)
+end
+
 
 -- vim: set ts=2 sw=2 tw=72 expandtab:
