@@ -1,3 +1,5 @@
+[![LOVE](https://img.shields.io/badge/L%C3%96VE-11.1-EA316E.svg)](http://love2d.org/)
+
 # LÖVELive
 Live coding framework for [LÖVE](https://love2d.org/)
 
