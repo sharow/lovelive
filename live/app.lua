@@ -1,5 +1,6 @@
 -- -*- Mode: lua; tab-width: 2; lua-indent-level: 2; indent-tabs-mode: nil; -*-
 
+local livemodule = require('livemodule')
 local app = {}
 
 -- config
@@ -23,16 +24,16 @@ end
 
 function app.reload()
   -- reload by lovelive
+  -- you can reload another module by `foo = livemodule.reload('foo')`
 end
 
 function app.update(dt)
+
 end
 
 function app.draw()
   love.timer.sleep(0.02)
 end
-
-
 
 return app
 
