@@ -72,17 +72,20 @@ local errormsg = nil
 local draw_msg = function(msg)
   love.graphics.clear()
   love.graphics.setColor(255, 255, 255, 255)
-  love.graphics.printf(msg, 0, 0, love.graphics.getWidth())
-  -- love.graphics.present()
+  love.graphics.print(msg, 0, 0)
 end
 
 local set_error = function(msg)
   if msg then
-    errormsg = debug.traceback("Error: " .. tostring(msg)):gsub("\n[^\n]+$", "")
+    if msg ~= errormsg then
+      errormsg = msg
+      print(errormsg)
+    end
     if conf.error_file then
-      f = io.open(conf.error_file, "a+")
+      local f = io.open(conf.error_file, "a+")
       f:write(errormsg .. "\n\n")
       f:flush()
+      f:close()
     end
   else
     errormsg = nil
@@ -91,8 +94,8 @@ end
 
 local reload = function()
   app, msg = reload_module("app", conf.gc_before_reload)
-  if msg then
-    print(msg)
+  if (not msg) and errormsg then
+    print("live: recover from error state.")
   end
   set_error(msg)
 end
@@ -103,9 +106,11 @@ local call = function(name, ...)
     return
   end
   if conf.use_pcall then
-    local ok, obj = pcall(app[name], ...)
+    local ok, err = pcall(app[name], ...)
     if not ok then
-      set_error(obj)
+      print('error from '.. name .. '(): ' .. tostring(err))
+      set_error(err)
+      return err
     end
   else
     app[name](...)
@@ -146,7 +151,11 @@ love.draw = function(...)
     draw_msg(errormsg)
     love.timer.sleep(0.1)
   else
-    call("draw", ...)
+    local err = call("draw", ...)
+    if err then
+      draw_msg(err)
+      love.timer.sleep(0.1)
+    end
   end
 end
 
@@ -155,7 +164,6 @@ local lovecallbacks = [[
   mousefocus
   mousemoved
   directorydropped
-  draw
   filedropped
   focus
   keypressed
