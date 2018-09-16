@@ -6,6 +6,10 @@
 -- end
 --
 
+
+local arg, app, conf, t0
+local errormsg
+
 local load_module = function(mod, reload)
   local m = require(mod)
   if reload then
@@ -67,8 +71,6 @@ local loadliveconf = function()
   return c
 end
 
-local errormsg = nil
-
 local draw_msg = function(msg)
   love.graphics.clear()
   love.graphics.setColor(255, 255, 255, 255)
@@ -93,6 +95,7 @@ local set_error = function(msg)
 end
 
 local reload = function()
+  local msg
   app, msg = reload_module("app", conf.gc_before_reload)
   if (not msg) and errormsg then
     print("live: recover from error state.")
@@ -119,6 +122,7 @@ end
 
 
 -- love callbacks
+
 
 love.load = function(arg)
   arg = arg
