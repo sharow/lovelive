@@ -170,7 +170,6 @@ local lovecallbacks = [[
   directorydropped
   filedropped
   focus
-  keypressed
   keyreleased
   lowmemory
   mousefocus
